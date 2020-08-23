@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:geolocator/geolocator.dart';
 import "package:http/http.dart" as http;
-import 'package:weather_app/api_key.dart';
+import 'package:weather_app/key.dart';
 
 class API {
   const API._();
