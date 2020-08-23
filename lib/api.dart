@@ -1,9 +1,10 @@
 import 'dart:convert';
 
 import "package:http/http.dart" as http;
+import 'package:weather_app/api_key.dart';
 
 class API {
-  static const String apiKey = "a4151c00c3318ce9d634d69b1be29514";
+  
   static const String host = "api.openweathermap.org";
   static const String currentWeather = "weather";
 
@@ -15,7 +16,7 @@ class API {
           "lat": lat,
           "lon": lon,
           "units": "metric",
-          "appid": apiKey
+          "appid": API_KEY
         },
       );
 
