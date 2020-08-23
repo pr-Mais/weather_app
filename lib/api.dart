@@ -5,9 +5,12 @@ import "package:http/http.dart" as http;
 import 'package:weather_app/api_key.dart';
 
 class API {
-  static const String host = "api.openweathermap.org";
+  const API._();
+  static const instance = API._();
 
-  static Uri uri({String lat, String lon}) => Uri(
+  final String host = "api.openweathermap.org";
+
+  Uri uri({String lat, String lon}) => Uri(
         scheme: "https",
         host: host,
         pathSegments: {"data", "2.5", "weather"},
@@ -29,7 +32,7 @@ class API {
       ///Now we will construct our Uri using the static method uri(),
       ///passing lon & lat parameteres as required by the API.
       ///Check the endpoint docs here: https://openweathermap.org/current
-      final requestUri = API.uri(
+      final requestUri = uri(
         lon: position.longitude.toString(),
         lat: position.latitude.toString(),
       );
@@ -49,7 +52,6 @@ class API {
       ///Finally we will transform the response into a [Weather] object, and return
       ///it to be used in the UI.
       return Weather.fromMap(decodedJson);
-      
     } catch (e) {
       rethrow;
     }

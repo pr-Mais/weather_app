@@ -13,20 +13,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        appBarTheme: AppBarTheme(
-          color: Colors.transparent,
-          brightness: Brightness.light,
-          textTheme: TextTheme(
-            headline6: TextStyle(color: Colors.black, fontSize: 18),
-          ),
-          iconTheme: IconThemeData(
-            color: Colors.black,
-          ),
-        ),
+        primarySwatch: Colors.teal,
       ),
       darkTheme: ThemeData.dark(),
       debugShowCheckedModeBanner: false,
@@ -47,14 +35,17 @@ class _HomeState extends State<Home> {
   String error = "";
 
   Future<void> getWeather() async {
+    
     String _error = "";
 
     try {
-      final _currentWeather = await API().getCurrentWeather();
+      
+      final _currentWeather = await API.instance.getCurrentWeather();
 
       setState(() {
         currentWeather = _currentWeather;
       });
+
     } on SocketException {
       _error = "You don't have connection, try again later.";
     } on PlatformException catch (e) {
@@ -67,6 +58,7 @@ class _HomeState extends State<Home> {
     setState(() {
       error = _error;
     });
+
   }
 
   @override
@@ -81,7 +73,6 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         elevation: 0.0,
         title: Text("WEATHER TODAY"),
-        actions: [IconButton(icon: Icon(Icons.menu), onPressed: () {})],
       ),
       body: RefreshIndicator(
         onRefresh: getWeather,
