@@ -1,17 +1,16 @@
 import 'dart:convert';
 
+import 'package:geolocator/geolocator.dart';
 import "package:http/http.dart" as http;
 import 'package:weather_app/api_key.dart';
 
 class API {
-  
   static const String host = "api.openweathermap.org";
-  static const String currentWeather = "weather";
 
-  static Uri uri({String lat, String lon, String endpoint}) => Uri(
+  static Uri uri({String lat, String lon}) => Uri(
         scheme: "https",
         host: host,
-        pathSegments: {"data", "2.5", endpoint},
+        pathSegments: {"data", "2.5", "weather"},
         queryParameters: {
           "lat": lat,
           "lon": lon,
@@ -20,13 +19,40 @@ class API {
         },
       );
 
-  Future<Weather> getWeather(Uri uri) async {
-    String _uri = uri.toString();
-    final response = await http.get(_uri);
+  Future<Weather> getCurrentWeather() async {
+    try {
+      ///get the current location of the user!
+      ///Using the geolocator package: https://pub.dev/packages/geolocator
+      Position position = await Geolocator()
+          .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 
-    final decodedJson = json.decode(response.body);
-    print(decodedJson);
-    return Weather.fromMap(decodedJson);
+      ///Now we will construct our Uri using the static method uri(),
+      ///passing lon & lat parameteres as required by the API.
+      ///Check the endpoint docs here: https://openweathermap.org/current
+      final requestUri = API.uri(
+        lon: position.longitude.toString(),
+        lat: position.latitude.toString(),
+      );
+
+      ///After we hav a uri, we can now send our request using
+      ///http package: https://pub.dev/packages/http, and the result
+      ///will be stored in a variable [response].
+      final response = await http.get(requestUri);
+
+      ///The response, if recieaved correctly. will be in the form of [json]
+      ///so in order to read the data inside of it, we first need to decode it,
+      ///by using the [json.decode()] method from the built-in [dart:convert] package,
+      final decodedJson = json.decode(response.body);
+
+      print(decodedJson);
+
+      ///Finally we will transform the response into a [Weather] object, and return
+      ///it to be used in the UI.
+      return Weather.fromMap(decodedJson);
+      
+    } catch (e) {
+      rethrow;
+    }
   }
 }
 
@@ -35,9 +61,8 @@ class Weather {
   final String city;
   final String country;
   final String main;
+  final String desc;
   final String icon;
-  final int max;
-  final int min;
 
   String getIcon() => Uri(
         scheme: "https",
@@ -46,11 +71,10 @@ class Weather {
       ).toString();
 
   Weather.fromMap(Map<String, dynamic> json)
-      : temp = json['main']['temp'] as int,
+      : temp = json['main']['temp'].toInt(),
         city = json['name'],
         country = json['sys']['country'],
         main = json['weather'][0]['main'],
-        icon = json['weather'][0]['icon'],
-        max = json['main']['temp_max'] as int,
-        min = json['main']['temp_min'] as int;
+        desc = json['weather'][0]['description'],
+        icon = json['weather'][0]['icon'];
 }

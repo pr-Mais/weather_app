@@ -1,5 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter/services.dart';
 import 'package:weather_app/api.dart';
 
 void main() {
@@ -17,17 +19,16 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         appBarTheme: AppBarTheme(
           color: Colors.transparent,
+          brightness: Brightness.light,
           textTheme: TextTheme(
             headline6: TextStyle(color: Colors.black, fontSize: 18),
           ),
           iconTheme: IconThemeData(
             color: Colors.black,
           ),
-
         ),
       ),
       darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       home: Home(),
     );
@@ -46,24 +47,26 @@ class _HomeState extends State<Home> {
   String error = "";
 
   Future<void> getWeather() async {
-    try{
-      Position position = await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    final requestUri = API.uri(
-      lon: position.longitude.toString(),
-      lat: position.latitude.toString(),
-      endpoint: API.currentWeather,
-    );
+    String _error = "";
 
-    final _currentWeather = await API().getWeather(requestUri);
+    try {
+      final _currentWeather = await API().getCurrentWeather();
+
+      setState(() {
+        currentWeather = _currentWeather;
+      });
+    } on SocketException {
+      _error = "You don't have connection, try again later.";
+    } on PlatformException catch (e) {
+      _error =
+          "${e.message}, please allow the app to access your current location from the settings.";
+    } catch (e) {
+      _error = "Unknown error, try again.";
+    }
 
     setState(() {
-      currentWeather = _currentWeather;
-      error = "";
+      error = _error;
     });
-    } catch(e) {
-      error = "${e.message}, please allow the app to access your current location from the settings.";
-    }
   }
 
   @override
@@ -84,42 +87,36 @@ class _HomeState extends State<Home> {
         onRefresh: getWeather,
         child: Stack(
           children: [
-            Align(
-                alignment: Alignment.topCenter,
-                child: Container(
-                  decoration: BoxDecoration(color: Theme.of(context).highlightColor),
-                  padding: EdgeInsets.all(20),
-                  child: Text(
-                    "The information is using OpenWeather Public API, and is displaying the weather for your current location.",
-                    textAlign: TextAlign.center,
-                  ),
-                )),
-            ListView(),
-            if(error.isNotEmpty) Center(child: Text(error, textAlign: TextAlign.center,)),
-            if (currentWeather == null && error.isEmpty) Center(child: Text("Loading...")),
+            if (currentWeather == null && error.isEmpty)
+              Center(child: Text("Loading...")),
             if (currentWeather != null)
-              Center(
+              Container(
+                color: Theme.of(context).primaryColor.withOpacity(0.15),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.location_pin),
+                        Icon(
+                          Icons.location_pin,
+                          color: Theme.of(context).primaryColor,
+                        ),
                         Text(
                           "${currentWeather.city}, ${currentWeather.country}",
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
                           ),
                         ),
                       ],
                     ),
                     SizedBox(height: 20),
                     Text(
-                      "${currentWeather.temp.toString()}°",
+                      "${currentWeather.temp.toString()}",
                       style: TextStyle(
-                        fontSize: 100,
+                        fontSize: 80,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -131,7 +128,7 @@ class _HomeState extends State<Home> {
                           width: 40,
                         ),
                         Text(
-                          currentWeather.main,
+                          "${currentWeather.main}: ${currentWeather.desc}",
                           style: TextStyle(fontSize: 20),
                         ),
                         SizedBox(width: 20),
@@ -140,7 +137,44 @@ class _HomeState extends State<Home> {
                   ],
                 ),
               ),
+            Column(
+              children: [
+                HighlightedMsg(
+                  msg:
+                      "The information is using OpenWeather Public API, and is displaying the weather for your current location. Tempreture is in celcius.",
+                ),
+                if (error.isNotEmpty)
+                  HighlightedMsg(msg: "$error", color: Colors.red[100]),
+              ],
+            ),
+            ListView(),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class HighlightedMsg extends StatelessWidget {
+  const HighlightedMsg({
+    Key key,
+    @required this.msg,
+    this.color,
+  }) : super(key: key);
+  final String msg;
+  final Color color;
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        decoration:
+            BoxDecoration(color: color ?? Theme.of(context).highlightColor),
+        padding: EdgeInsets.all(20),
+        child: Text(
+          msg,
+          textAlign: TextAlign.center,
         ),
       ),
     );
