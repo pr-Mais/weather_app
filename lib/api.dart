@@ -10,6 +10,8 @@ class API {
 
   final String host = "api.openweathermap.org";
 
+  ///The final URI would look like this: 
+  ///[https://<host>/data/2.5/weather?lat=<lat>&lon=<lon>&units=metric&appid=<APPI_KEY>]
   Uri uri({String lat, String lon}) => Uri(
         scheme: "https",
         host: host,
