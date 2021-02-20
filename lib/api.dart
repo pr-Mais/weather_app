@@ -4,13 +4,15 @@ import 'package:geolocator/geolocator.dart';
 import "package:http/http.dart" as http;
 import 'package:weather_app/key.dart';
 
+enum Status {PENDING, ACTIVE, ERROR}
+
 class API {
   const API._();
   static const instance = API._();
 
   final String host = "api.openweathermap.org";
 
-  ///The final URI would look like this: 
+  ///The final URL would look like this: 
   ///[https://<host>/data/2.5/weather?lat=<lat>&lon=<lon>&units=metric&appid=<APPI_KEY>]
   Uri uri({String lat, String lon}) => Uri(
         scheme: "https",

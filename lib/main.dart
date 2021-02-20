@@ -32,20 +32,19 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   Weather currentWeather;
+  Status status;
   String error = "";
 
   Future<void> getWeather() async {
-    
     String _error = "";
 
     try {
-      
       final _currentWeather = await API.instance.getCurrentWeather();
 
       setState(() {
         currentWeather = _currentWeather;
+        status = Status.ACTIVE;
       });
-
     } on SocketException {
       _error = "You don't have connection, try again later.";
     } on PlatformException catch (e) {
@@ -57,12 +56,15 @@ class _HomeState extends State<Home> {
 
     setState(() {
       error = _error;
+      if (_error.isNotEmpty) {
+        status = Status.ERROR;
+      }
     });
-
   }
 
   @override
   void initState() {
+    status = Status.PENDING;
     getWeather();
     super.initState();
   }
@@ -78,9 +80,9 @@ class _HomeState extends State<Home> {
         onRefresh: getWeather,
         child: Stack(
           children: [
-            if (currentWeather == null && error.isEmpty)
+            if (status == Status.PENDING)
               Center(child: Text("Loading...")),
-            if (currentWeather != null)
+            if (status == Status.ACTIVE)
               Container(
                 color: Theme.of(context).primaryColor.withOpacity(0.15),
                 child: Column(
@@ -111,19 +113,9 @@ class _HomeState extends State<Home> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.network(
-                          currentWeather.getIcon(),
-                          width: 40,
-                        ),
-                        Text(
-                          "${currentWeather.main}: ${currentWeather.desc}",
-                          style: TextStyle(fontSize: 20),
-                        ),
-                        SizedBox(width: 20),
-                      ],
+                    Text(
+                      "${currentWeather.main}: ${currentWeather.desc}",
+                      style: TextStyle(fontSize: 20),
                     ),
                   ],
                 ),
@@ -134,7 +126,7 @@ class _HomeState extends State<Home> {
                   msg:
                       "The information is using OpenWeather Public API, and is displaying the weather for your current location. Tempreture is in celcius.",
                 ),
-                if (error.isNotEmpty)
+                if (status == Status.ERROR)
                   HighlightedMsg(msg: "$error", color: Colors.red[100]),
               ],
             ),
