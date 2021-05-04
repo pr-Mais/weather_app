@@ -36,7 +36,7 @@ class API {
       ///Now we will construct our Uri using the static method uri(),
       ///passing lon & lat parameteres as required by the API.
       ///Check the endpoint docs here: https://openweathermap.org/current
-      final requestUri = uri(
+      final Uri requestUri = uri(
         lon: position.longitude.toString(),
         lat: position.latitude.toString(),
       );
@@ -44,14 +44,12 @@ class API {
       ///After we hav a uri, we can now send our request using
       ///http package: https://pub.dev/packages/http, and the result
       ///will be stored in a variable [response].
-      final response = await http.get(requestUri);
+      final http.Response response = await http.get(requestUri);
 
       ///The response, if recieaved correctly. will be in the form of [json]
       ///so in order to read the data inside of it, we first need to decode it,
       ///by using the [json.decode()] method from the built-in [dart:convert] package,
-      final decodedJson = json.decode(response.body);
-
-      print(decodedJson);
+      final Map<String, dynamic> decodedJson = json.decode(response.body);
 
       ///Finally we will transform the response into a [Weather] object, and return
       ///it to be used in the UI.

@@ -48,8 +48,7 @@ class _HomeState extends State<Home> {
     } on SocketException {
       _error = "You don't have connection, try again later.";
     } on PlatformException catch (e) {
-      _error =
-          "${e.message}, please allow the app to access your current location from the settings.";
+      _error = "${e.message}, please allow the app to access your current location from the settings.";
     } catch (e) {
       _error = "Unknown error, try again.";
     }
@@ -81,7 +80,9 @@ class _HomeState extends State<Home> {
         child: Stack(
           children: [
             if (status == Status.PENDING)
-              Center(child: Text("Loading...")),
+              Center(
+                child: CircularProgressIndicator.adaptive(),
+              ),
             if (status == Status.ACTIVE)
               Container(
                 color: Theme.of(context).primaryColor.withOpacity(0.15),
@@ -113,24 +114,33 @@ class _HomeState extends State<Home> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      "${currentWeather.main}: ${currentWeather.desc}",
-                      style: TextStyle(fontSize: 20),
-                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.network(currentWeather.getIcon(), height: 40),
+                        Text(
+                          "${currentWeather.main}: ${currentWeather.desc}",
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      ],
+                    )
                   ],
                 ),
               ),
             Column(
               children: [
                 HighlightedMsg(
-                  msg:
-                      "The information is using OpenWeather Public API, and is displaying the weather for your current location. Tempreture is in celcius.",
+                  msg: "The information is using OpenWeather Public API, "
+                      "and is displaying the weather for your current location. "
+                      "Tempreture is in celcius.",
                 ),
                 if (status == Status.ERROR)
-                  HighlightedMsg(msg: "$error", color: Colors.red[100]),
+                  HighlightedMsg(
+                    msg: "$error",
+                    color: Colors.red[100],
+                  ),
               ],
             ),
-            ListView(),
           ],
         ),
       ),
@@ -152,8 +162,7 @@ class HighlightedMsg extends StatelessWidget {
       alignment: Alignment.topCenter,
       child: Container(
         width: MediaQuery.of(context).size.width,
-        decoration:
-            BoxDecoration(color: color ?? Theme.of(context).highlightColor),
+        decoration: BoxDecoration(color: color ?? Theme.of(context).highlightColor),
         padding: EdgeInsets.all(20),
         child: Text(
           msg,
