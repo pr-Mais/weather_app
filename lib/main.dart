@@ -45,20 +45,14 @@ class _HomeState extends State<Home> {
         currentWeather = _currentWeather;
         status = Status.ACTIVE;
       });
-    } on SocketException {
-      _error = "You don't have connection, try again later.";
-    } on PlatformException catch (e) {
-      _error = "${e.message}, please allow the app to access your current location from the settings.";
     } catch (e) {
-      _error = "Unknown error, try again.";
-    }
-
-    setState(() {
-      error = _error;
-      if (_error.isNotEmpty) {
+      _error = e;
+      setState(() {
+        error = _error;
         status = Status.ERROR;
-      }
-    });
+      });
+      return;
+    }
   }
 
   @override
@@ -79,54 +73,58 @@ class _HomeState extends State<Home> {
         onRefresh: getWeather,
         child: Stack(
           children: [
-            if (status == Status.PENDING)
-              Center(
-                child: CircularProgressIndicator.adaptive(),
-              ),
-            if (status == Status.ACTIVE)
-              Container(
-                color: Theme.of(context).primaryColor.withOpacity(0.15),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+            Container(
+              color: Theme.of(context).primaryColor.withOpacity(0.15),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (status == Status.PENDING)
+                    Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    ),
+                  if (status == Status.ACTIVE)
+                    Column(
                       children: [
-                        Icon(
-                          Icons.location_pin,
-                          color: Theme.of(context).primaryColor,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.location_pin,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            Text(
+                              "${currentWeather.city}, ${currentWeather.country}",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                          ],
                         ),
+                        SizedBox(height: 20),
                         Text(
-                          "${currentWeather.city}, ${currentWeather.country}",
+                          "${currentWeather.temp.toString()}",
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 80,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
                           ),
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    Text(
-                      "${currentWeather.temp.toString()}",
-                      style: TextStyle(
-                        fontSize: 80,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.network(currentWeather.getIcon(), height: 40),
-                        Text(
-                          "${currentWeather.main}: ${currentWeather.desc}",
-                          style: TextStyle(fontSize: 20),
-                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.network(currentWeather.getIcon(), height: 40),
+                            Text(
+                              "${currentWeather.main}: ${currentWeather.desc}",
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ],
+                        )
                       ],
                     )
-                  ],
-                ),
+                ],
               ),
+            ),
             Column(
               children: [
                 HighlightedMsg(
