@@ -14,5 +14,5 @@ To run this sample, you need to clone it first, then signup to [OpenWeather](htt
 
 🔗 Check out the complete tutorial link from [here](https://fairybits.com/blog/flutter-weather-app-en/).
 
-### Issues?
-Please feel free to start an issue. You can also contact me through Twitter [@pr_Mais](https://twitter.com/pr_mais).
+### Something isn't working?
+Please feel free to open an issue. You can also contact me through Twitter [@pr_Mais](https://twitter.com/pr_mais).
